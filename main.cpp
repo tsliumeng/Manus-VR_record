@@ -4,7 +4,7 @@
 
 std::string toString_allFingerDataCSV(double *sensorsArray){
 
-    // Value sensors for each fingers
+    // Value sensors for each fingers Low, High
     const std::string pinkyValue = std::to_string(sensorsArray[0]) + "," + std::to_string(sensorsArray[1]);
     const std::string thumbValue = std::to_string(sensorsArray[2]) + "," + std::to_string(sensorsArray[3]);
     const std::string indexValue = std::to_string(sensorsArray[4]) + "," + std::to_string(sensorsArray[5]);
