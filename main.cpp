@@ -1,8 +1,12 @@
 #include <iostream>
 #include <Manus.h>
+#include <fstream>
 
 
-std::string toString_allFingerDataCSV(double *sensorsArray){
+// Helper function to format raw sensor data to CSV
+std::string toString_allFingerDataCSV(double *sensorsArray) {
+
+
 
     // Value sensors for each fingers Low, High
     const std::string pinkyValue = std::to_string(sensorsArray[0]) + "," + std::to_string(sensorsArray[1]);
@@ -13,40 +17,50 @@ std::string toString_allFingerDataCSV(double *sensorsArray){
 
     return thumbValue + "," + indexValue + "," + middleValue + "," + ringValue + "," + pinkyValue;
 
-
-
-
 }
 
 int main() {
 
-    manus_session_t session;
-    ManusInit(&session);
+// Initializing session of MANUS-VR
+    manus_session_t session = nullptr;
 
-    int idFingerLow = 2;
-    int idFingerHigh = 3;
+
     uint32_t *idDONGLE, count;
-    manus_hand_t leftData;
-
+    manus_hand_t leftHandData{}, rightHandData{};
+    ManusInit(&session);
     ManusGetDongleIDs(session, idDONGLE, count);
 
-    std::cout << "Connected to Manus-VR DONGLE-ID " << idDONGLE << std::endl;
-    std::cout << "Left GLove connected " << ManusIsConnected(session, GLOVE_LEFT) << std::endl;
 
+    if (session != nullptr) {
 
-    while (true) {
-        ManusGetHand(session, GLOVE_LEFT, &leftData);
+        ManusGetHand(session, GLOVE_LEFT, &leftHandData);
+//         ManusGetHand(session, GLOVE_RIGHT, &rightHandData);
 
-            std::cout << " Finger sensor number " << idFingerLow << " Value : " << leftData.raw.finger_sensor[idFingerLow] << std::endl;
-            std::cout << " Finger sensor number " << idFingerHigh << " Value : " << leftData.raw.finger_sensor[idFingerHigh] << std::endl;
-            std::cout << "\n" << std::endl;
+        // Defining the saving file
+        std::ofstream leftRecordSensorCSV;
+        leftRecordSensorCSV.open("leftRecordSensor.csv");
 
+        std::ofstream rightRecordSensorCSV;
+        rightRecordSensorCSV.open("rightRecordSensor.csv");
 
+        //TODO find a better way to control the stopping of the recording actually waiting for killSIg
+        while (true) {
+
+            //std::cout << " Getting raw data from gloves" << std::endl;
+            std::cout << std::to_string(leftHandData.raw.finger_sensor[0]) << std::endl;
+            leftRecordSensorCSV << toString_allFingerDataCSV(leftHandData.raw.finger_sensor) + "\n";
+//            rightRecordSensorCSV << toString_allFingerDataCSV(rightHandData.raw.finger_sensor) + "\n";
+        }
+
+        leftRecordSensorCSV.close();
+        rightRecordSensorCSV.close();
+    } else {
+        std::cout << " Unable to Connected to Manus-VR gloves" << std::endl;
+        ManusExit(session);
+        return 0;
     }
 
 
 
-ManusExit(session);
-
-return 0;
+    return 0;
 }
